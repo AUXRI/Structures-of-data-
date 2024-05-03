@@ -2,7 +2,7 @@
 
 СВЯЗНЫЕ СПИСКИ
 
-
+~~~
 class Node {
 	protected:
 		Node *_next;
@@ -431,7 +431,7 @@ template<class T> class SearchTree {
 3.5.4 конструкторы и деструкторы 
 
 
-
+~~~
 
 
 
