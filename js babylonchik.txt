@@ -1,0 +1,756 @@
+
+
+
+class Node {
+    constructor() {
+        this._next = null;
+        this._prev = null;
+    }
+    next() {
+        return this._next;
+    }
+    prev() {
+        return this._prev;
+    }
+    insert(b) {
+        let c = this._next;
+        b._next = c;
+        b._prev = this;
+        this._next = b;
+        c._prev = b;
+        return b;
+    }
+    remove() {
+        this._prev._next = this._next;
+        this._next._prev = this._prev;
+        this._next = this._prev = this;
+        return this;
+    }
+    splice(b) {
+        let a = this;
+        let an = a._next;
+        let bn = b._next;
+        a._next = bn;
+        b._next = an;
+        an._prev = b;
+        bn._prev = a;
+    }
+}
+
+class ListNode extends Node {
+    constructor(val) {
+        super();
+        this._val = val;
+    }
+}
+
+class List {
+    constructor() {
+        this._length = 0;
+        this.header = new ListNode(null);
+        this.win = this.header;
+    }
+    insert(val) {
+        this.win.insert(new ListNode(val));
+        this._length++;
+        return val;
+    }
+    prepend(val) {
+        this.header.insert(new ListNode(val));
+        this._length++;
+        return val;
+    }
+    append(val) {
+        this.header.prev().insert(new ListNode(val));
+        this._length++;
+        return val;
+    }
+    appendList(l) {
+        let a = this.header.prev();
+        a.splice(l.header);
+        this._length += l._length;
+        l.header.remove();
+        l._length = 0;
+        l.win = this.header;
+        return this;
+    }
+    remove() {
+        if (this.win === this.header)
+            return null;
+        let val = this.win._val;
+        this.win = this.win.prev();
+        this.win.next().remove();
+        this._length--;
+        return val;
+    }
+    setVal(v) {
+        if (this.win !== this.header)
+            this.win._val = v;
+    }
+    val() {
+        return this.win._val;
+    }
+    next() {
+        this.win = this.win.prev();
+        return this.win._val;
+    }
+    first() {
+        this.win = this.header.next();
+        return this.win._val;
+    }
+    last() {
+        this.win = this.header.prev();
+        return this.win._val;
+    }
+    length() {
+        return this._length;
+    }
+    isFirst() {
+        return this.win === this.header.next() && this._length > 0;
+    }
+    isLast() {
+        return this.win === this.header.prev() && this._length > 0;
+    }
+    isHead() {
+        return this.win === this.header;
+    }
+}
+
+function arrayToList(a) {
+    let s = new List();
+    for (let i = 0; i < a.length; i++)
+        s.append(a[i]);
+    return s;
+}
+
+function leastItem(s, cmp) {
+    if (s.length() === 0)
+        return null;
+    let v = s.first();
+    s.next();
+    while (!s.isHead()) {
+        if (cmp(s.val(), v) < 0)
+            v = s.val();
+        s.next();
+    }
+    return v;
+}
+
+let s = new List();
+s.append("bat");
+s.append("ant");
+s.append("cat");
+
+console.log(leastItem(s, (a, b) => a.localeCompare(b)));
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Stack {
+    constructor() {
+        this.s = new List();
+    }
+    push(v) {
+        this.s.prepend(v);
+    }
+    pop() {
+        return this.s.remove();
+    }
+    empty() {
+        return this.s.length() === 0;
+    }
+    size() {
+        return this.s.length();
+    }
+    top() {
+        return this.s.first();
+    }
+    nextToTop() {
+        this.s.first();
+        return this.s.next();
+    }
+    bottom() {
+        return this.s.last();
+    }
+}
+
+function reverse(a, n) {
+    let stack = new Stack();
+    for (let i = 0; i < n; i++)
+        stack.push(a[i]);
+    for (let i = 0; i < n; i++)
+        a[i] = stack.pop();
+}
+
+let arr = ["a", "b", "c", "d", "e"];
+reverse(arr, arr.length);
+console.log(arr); // Вывод: ["e", "d", "c", "b", "a"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class TreeNode {
+    constructor(v) {
+        this.val = v;
+        this._lchild = null;
+        this._rchild = null;
+    }
+}
+
+class SearchTree {
+    constructor(c) {
+        this.root = null;
+        this.cmp = c;
+    }
+    isEmpty() {
+        return this.root === null;
+    }
+    find(val) {
+        let n = this.root;
+        while (n) {
+            let result = this.cmp(val, n.val);
+            if (result < 0)
+                n = n._lchild;
+            else if (result > 0)
+                n = n._rchild;
+            else
+                return n.val;
+        }
+        return null;
+    }
+    findMin() {
+        let n = this._findMin(this.root);
+        return (n ? n.val : null);
+    }
+    _findMin(n) {
+        if (n === null)
+            return null;
+        while (n._lchild)
+            n = n._lchild;
+        return n;
+    }
+    inorder(visit) {
+        this._inorder(this.root, visit);
+    }
+    _inorder(n, visit) {
+        if (n) {
+            this._inorder(n._lchild, visit);
+            visit(n.val);
+            this._inorder(n._rchild, visit);
+        }
+    }
+    insert(val) {
+        if (this.root === null) {
+            this.root = new TreeNode(val);
+            return;
+        } else {
+            let result;
+            let p, n = this.root;
+            while (n) {
+                p = n;
+                result = this.cmp(val, p.val);
+                if (result < 0)
+                    n = p._lchild;
+                else if (result > 0)
+                    n = p._rchild;
+                else
+                    return;
+            }
+            if (result < 0)
+                p._lchild = new TreeNode(val);
+            else
+                p._rchild = new TreeNode(val);
+        }
+    }
+    remove(val) {
+        this._remove(val, this.root);
+    }
+    _remove(val, n) {
+        if (n === null)
+            return;
+        let result = this.cmp(val, n.val);
+        if (result < 0)
+            this._remove(val, n._lchild);
+        else if (result > 0)
+            this._remove(val, n._rchild);
+        else {
+            if (n._lchild === null) {
+                let old = n;
+                n = old._rchild;
+                delete old;
+            } else if (n._rchild === null) {
+                let old = n;
+                n = old._lchild;
+                delete old;
+            } else {
+                let m = this._findMin(n._rchild);
+                n.val = m.val;
+                this._remove(n.val, n._rchild);
+            }
+        }
+    }
+    removeMin() {
+        let v = this.findMin();
+        this.remove(v);
+        return v;
+    }
+}
+
+function heapSort(s, n, cmp) {
+    let t = new SearchTree(cmp);
+    for (let i = 0; i < n; i++)
+        t.insert(s[i]);
+    for (let i = 0; i < n; i++)
+        s[i] = t.removeMin();
+}
+
+// Пример использования:
+let arr = [6, 3, 9, 2, 8, 1, 5, 7, 4];
+heapSort(arr, arr.length, (a, b) => a - b);
+console.log(arr); // Вывод: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class BraideNode extends TreeNode {
+    constructor(val) {
+        super(val);
+    }
+    rchild() {
+        return this._rchild;
+    }
+    lchild() {
+        return this._lchild;
+    }
+    next() {
+        return this._next;
+    }
+    prev() {
+        return this._prev;
+    }
+}
+
+class BraideSearchTree {
+    constructor(c) {
+        this.root = new BraideNode(null);
+        this.win = this.root;
+        this.cmp = c;
+    }
+    next() {
+        this.win = this.win.next();
+        return this.win.val;
+    }
+    prev() {
+        this.win = this.win.prev();
+        return this.win.val;
+    }
+    inorder(visit) {
+        let n = this.root.next();
+        while (n !== this.root) {
+            visit(n.val);
+            n = n.next();
+        }
+    }
+    val() {
+        return this.win.val;
+    }
+    isFirst() {
+        return this.win === this.root.next() && this.root !== this.root.next();
+    }
+    isLast() {
+        return this.win === this.root.prev() && this.root !== this.root.next();
+    }
+    isHead() {
+        return this.win === this.root;
+    }
+    isEmpty() {
+        return this.root === this.root.next();
+    }
+    find(val) {
+        let n = this.root.rchild();
+        while (n) {
+            let result = this.cmp(val, n.val);
+            if (result < 0)
+                n = n.lchild();
+            else if (result > 0)
+                n = n.rchild();
+            else {
+                this.win = n;
+                return n.val;
+            }
+        }
+        return null;
+    }
+    findMin() {
+        this.win = this.root.next();
+        return this.win.val;
+    }
+    insert(val) {
+        let result = null;
+        let p = this.root;
+        let n = this.root.rchild();
+        while (n) {
+            p = n;
+            result = this.cmp(val, p.val);
+            if (result < 0)
+                n = p.lchild();
+            else if (result > 0)
+                n = p.rchild();
+            else
+                return null;
+        }
+        this.win = new BraideNode(val);
+        if (result < 0) {
+            p._lchild = this.win;
+            p.prev().insert(this.win);
+        } else {
+            p._rchild = this.win;
+            p.insert(this.win);
+        }
+        return val;
+    }
+    remove() {
+        if (this.win !== this.root)
+            this._remove(this.win.val, this.root._rchild);
+    }
+    _remove(val, n) {
+        let result = this.cmp(val, n.val);
+        if (result < 0)
+            this._remove(val, n._lchild);
+        else if (result > 0)
+            this._remove(val, n._rchild);
+        else {
+            if (n._lchild === null) {
+                let old = n;
+                if (this.win === old)
+                    this.win = old.prev();
+                n = old._rchild;
+                old.remove();
+                delete old;
+            } else if (n._rchild === null) {
+                let old = n;
+                if (this.win === old)
+                    this.win = old.prev();
+                n = old._lchild;
+                old.remove();
+                delete old;
+            } else {
+                let m = n.next();
+                n.val = m.val;
+                this._remove(m.val, n._rchild);
+            }
+        }
+    }
+    removeMin() {
+        let val = this.root.next().val;
+        if (this.root !== this.root.next())
+            this._remove(val, this.root._rchild);
+        return val;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+class RandomizedNode extends BraideNode {
+    constructor(val, seed = -1) {
+        super(val);
+        if (seed !== -1) {
+            Math.seedrandom(seed);
+        }
+        this._priority = Math.random();
+        this._parent = null;
+    }
+
+    rotateRight() {
+        let y = this;
+        let x = y.lchild();
+        let p = y.parent();
+        y._lchild = x.rchild();
+        if (y.lchild() !== null) {
+            y.lchild()._parent = y;
+        }
+        if (p.rchild() === y) {
+            p._rchild = x;
+        } else {
+            p._lchild = x;
+        }
+        x._parent = p;
+        x._rchild = y;
+        y._parent = x;
+    }
+
+    rotateLeft() {
+        let x = this;
+        let y = x.rchild();
+        let p = x.parent();
+        x._rchild = y.lchild();
+        if (x.rchild() !== null) {
+            x.rchild()._parent = x;
+        }
+        if (p.lchild() === x) {
+            p._lchild = y;
+        } else {
+            p._rchild = y;
+        }
+        y._parent = p;
+        y._lchild = x;
+        x._parent = y;
+    }
+
+    bubbleUp() {
+        let p = this.parent();
+        if (this.priority() < p.priority()) {
+            if (p.lchild() === this) {
+                p.rotateRight();
+            } else {
+                p.rotateLeft();
+            }
+            this.bubbleUp();
+        }
+    }
+
+    bubbleDown() {
+        let lcPriority = this.lchild() ? this.lchild().priority() : 2.0;
+        let rcPriority = this.rchild() ? this.rchild().priority() : 2.0;
+        let minPriority = Math.min(lcPriority, rcPriority);
+        if (this.priority() <= minPriority) {
+            return;
+        }
+        if (lcPriority < rcPriority) {
+            this.rotateRight();
+        } else {
+            this.rotateLeft();
+        }
+        this.bubbleDown();
+    }
+
+    rchild() {
+        return this._rchild;
+    }
+
+    lchild() {
+        return this._lchild;
+    }
+
+    next() {
+        return this._next;
+    }
+
+    prev() {
+        return this._prev;
+    }
+
+    parent() {
+        return this._parent;
+    }
+
+    priority() {
+        return this._priority;
+    }
+}
+
+class RandomizedSearchTree {
+    constructor(c, seed = -1) {
+        this.root = new RandomizedNode(null, seed);
+        this.win = this.root;
+        this.cmp = c;
+    }
+
+    next() {
+        this.win = this.win.next();
+        return this.win.val;
+    }
+
+    prev() {
+        this.win = this.win.prev();
+        return this.win.val;
+    }
+
+    val() {
+        return this.win.val;
+    }
+
+    inorder(visit) {
+        let n = this.root.next();
+        while (n !== this.root) {
+            visit(n.val);
+            n = n.next();
+        }
+    }
+
+    isFirst() {
+        return this.win === this.root.next() && this.root !== this.root.next();
+    }
+
+    isLast() {
+        return this.win === this.root.prev() && this.root !== this.root.next();
+    }
+
+    isHead() {
+        return this.win === this.root;
+    }
+
+    isEmpty() {
+        return this.root === this.root.next();
+    }
+
+    find(val) {
+        let n = this.root.rchild();
+        while (n) {
+            let result = this.cmp(val, n.val);
+            if (result < 0)
+                n = n.lchild();
+            else if (result > 0)
+                n = n.rchild();
+            else {
+                this.win = n;
+                return n.val;
+            }
+        }
+        return null;
+    }
+
+    findMin() {
+        this.win = this.root.next();
+        return this.win.val;
+    }
+
+    locate(val) {
+        let b = this.root;
+        let n = this.root.rchild();
+        while (n) {
+            let result = this.cmp(val, n.val);
+            if (result < 0)
+                n = n.lchild();
+            else if (result > 0) {
+                b = n;
+                n = n.rchild();
+            } else {
+                this.win = n;
+                return this.win.val;
+            }
+        }
+        this.win = b;
+        return this.win.val;
+    }
+
+    insert(val) {
+        let result = 1;
+        let p = this.root;
+        let n = this.root.rchild();
+        while (n) {
+            p = n;
+            result = this.cmp(val, p.val);
+            if (result < 0)
+                n = p.lchild();
+            else if (result > 0)
+                n = p.rchild();
+            else
+                return null;
+        }
+        this.win = new RandomizedNode(val);
+        this.win._parent = p;
+        if (result < 0) {
+            p._lchild = this.win;
+            p.prev().insert(this.win);
+        } else {
+            p._rchild = this.win;
+            p.insert(this.win);
+        }
+        this.win.bubbleUp();
+        return val;
+    }
+
+    remove() {
+        if (this.win !== this.root)
+            this._remove(this.win);
+    }
+
+    removeMin() {
+        let val = this.root.next().val;
+        if (this.root !== this.root.next())
+            this._remove(this.root.next());
+        return val;
+    }
+
+    _remove(n) {
+        n._priority = 1.5;
+        n.bubbleDown();
+        let p = n.parent();
+        if (p.lchild() === n)
+            p._lchild = null;
+        else
+            p._rchild = null;
+        if (this.win === n)
+            this.win = n.prev();
+        n.remove();
+        delete n;
+    }
+
+    remove(val) {
+        let v = this.find(val);
+        if (v) {
+            this.remove();
+            return v;
+        }
+        return null;
+    }
+}
+
