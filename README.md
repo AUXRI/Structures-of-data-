@@ -1,8 +1,10 @@
 # Structures-of-data-
 
-СВЯЗНЫЕ СПИСКИ
 
 ~~~
+СВЯЗНЫЕ СПИСКИ
+
+
 class Node {
 	protected:
 		Node *_next;
@@ -431,750 +433,1525 @@ template<class T> class SearchTree {
 3.5.4 конструкторы и деструкторы 
 
 
+<template<class T> SearchTree<T>::SearchTree(int(*c) (T,T)):
+	cmp(c), root(NULL)
+	{
+	}
+
+
+Деревл поиска пусто только, если в элементе данных root содержится NULL вместо разрешенного указателя:
+
+template<class T> int SearchTree<T>::isEmpty(void)
+{
+	return (root == NULL);
+}
+
+Деструктор удаляет все дерево путем обращения к деструктору корня:
+
+template<class T> SearchTree<T>::~SearchTree(void)
+{
+	if(root) delete root;
+}
+
+
+Поиск
+
+
+<template<class T> T SearchTree::find(T val)
+{
+	TreeNode *n = root;
+	while (n) {
+		int result = (*cmp) (val, b -> val);
+		if(result < 0)
+			n = n->_lchild;
+		else if (result > 0)
+			n = n -> _rchild;
+		else
+			return n ->val;
+	}
+	return NULL;
+}
+
+
+template<class T> T SearchTree<T>::findMin(void)
+{
+	TreeNode<T> *n = findMin(root);
+	return (n ? n -> val: NULL);
+}
+
+template<class T>
+TreeNode<T> *SearchTree<T>::_findMin(TreeNode<T> *n)
+{
+if (n == NULL)
+	return NULL;
+while (n -> lchild)
+	n = n->_lchild;
+return n;
+}
+
+
+Симетричный обход
+
+template<class T> void SearchTree::inorder(void(*visit) (T)){
+	_inorder (root, visit);
+}
+
+template<class T>
+void SearchTree::inorder(TreeNode<T> *n, void(*visit) (T))
+{
+	if(n) {
+		_inorder(n->_lchild, visit);
+		(*visit) (n->val);
+		_inorder(n->rchild, visit);
+	}
+}
+
+
+void printString(char *s)
+{
+	cout << s << "\n";
+}
+
+
+
+
+Включение элементов
+
+
+template<Class T> void SearchTree<T>::insert(T val)
+{
+	if (root == NULL) {
+		root = new TreeNode<T>(val);
+		return;
+	}
+	else {
+		int result;
+		TreeNode<T> *p, *n = root;
+		while (n) {
+			p = n;
+			result = (*cmp) (val, p -> val);
+			if (result < 0)
+				n = p ->_lchild;
+			else if (result > 0)
+				n = p ->_lchild;
+			else
+				return;
+		}
+		if (result < 0 )
+			p -> _lchild = new TreeNode<T>(val);
+		else 
+			p ->_child = new TreeNode<T>(val);
+	}
+}
+
+
+
+
+Удаление элементов 
+
+
+template<class T> void SearchTree<T>::remove(T val)
+{
+	_remove(val, root);
+}
+
+
+template<class T>
+void SearchTree<T>::_remove(T val, TreeNode<T> *&n)
+
+{
+	if (n == NULL)
+		return ;
+	int result = (*cmp) (val, n ->val);
+	if (result < 0)
+		_remove(val, n ->_lchild);
+		
+	else if (result > 0)
+		_remove(val, n ->_rchild);
+	
+	else {
+		if(n ->_lchild == NULL) {
+			TreeNode<T> *old = n;
+			n = old -> rchild;
+			delete old;
+		}
+		
+		else if(n->_rchild == NULL) {
+			TreeNode<T> *old = n;
+			n = old->lchild;
+			delete old;
+		}
+		else {
+		TreeNode<T> *m= findMin(n->_rchild);
+		n ->val = m->val;
+		_remove(n->val, n->_rchild);
+		}
+	}
+}
+
+
+template<class T> T SearchTree<T>::removeMin(void)
+
+{
+	T v = findMin();
+	remove(v);
+	return v;
+}
+
+
+template<class T> void heapSort(T s(), int int n, int(*cmp) (T, T))
+{
+	SearchTree<T> t(cmp);
+	for (int i = 0; i < n; i++)
+		t.insert(s[i]);
+	for (i = 0; i <n; i++)
+		s[i] = t.removeMin();
+		
+}
+
+
+
+Связные двоичные деревья поиска
+
+Класс BraideNode 
+
+
+
+template<class T>
+class BraideNode : public Node, public TreeNode<T>{
+	public:
+		BraideNode (T);
+		BraideNode<T> *rchild(void);
+		BraideNode<T> *lchild(void);
+		BraideNode<T> *next(void)
+		BraideNode<T> *prev(void)
+		friend class BraideSearchTree<T>;
+};
+
+template<class T> BraideNode<T>::BraideNode(T val) : TreeNode<T> (val)
+{
+}
+
+
+template<class T>
+BraideNode<T> *BraideNode<T>::rchild(void)
+{
+	return (BraideNode<T> *)_rchild;
+}
+
+template<class T>
+BraideNode<T> *BraideNode<T>::lchild(void)
+{
+	return (BraideNode<T> *) _lchild;
+}
+
+
+template<class T>
+BraideNode<T> *BraideNode<T>::next(void)
+{
+	return (BraideNode<T> *)_next;
+}
+
+template<class T>
+BraideNode<T> *BraideNode<T> :: prev(void)
+{
+	return (BraideNode<T> *)_prev;
+}
+
+
+
+
+Класс BraideSearchTree
+
+
+template<class T> class BraideSearchTree{
+	private:
+		BraideNode<T> *root;
+		BraideNode<T> *win;
+		int (*cmp) (T, T);
+		void _remove(T, TreeNode<T> * &);
+	public:
+		BraideSearchTree(int(*) (T, T));
+		~BraideSearchTree(void);
+		T next (void);
+		T prev(void);
+		void inorder(void(*) (T));
+		T val(void);
+		bool isFirst(void);
+		bool isLast(void);
+		bool isHead(void);
+		bool isEmpty(void);
+		T find(T);
+		T findMin(void);
+		T insert(T);
+		void remove(void);
+		T removeMin(void);
+};
+
+
+
+конструкторы и деструкторы 
+
+template<class T>
+BraideSearchTree<T>::BraideSearchTree(int(*c) (T,T)) : cmp(c)
+{
+	win = root = new BraideNode<T>(NULL);
+}
+
+
+template<class T>
+BraideNode<T>::~BraideSearchTree(void)
+{
+	delete root;
+}
+
+использование ленты
+
+
+template<class T> T BraideSearchTree<T>::next(void)
+{
+	win = win->next();
+	return win->val;
+}
+
+template<class T> T BraideSearchTree<T>::prev(void)
+{
+	win = win ->prev();
+	return win->val;
+}
+
+
+template<class T> T BraideSearchTree<T>::val(void)
+{
+	return win->val;
+}
+
+template<class T>
+void BraideSearch Tree<T>::inorder(void(*visit) (T) )
+{
+	BraideNode<T> *n = root ->next();
+	while (n != root){
+		(*visit) (n ->val);
+		n = n -> next();
+	}
+}
+
+
+
+
+template<class T> bool BraideSearchTree<T>::isFirst(void)
+{
+	return (win == root -> next() ) && (root != root -> next());
+}
+
+
+template<class T> bool BraideSearchTree<T>::isLast(void)
+{
+	return (win == root -> prev() ) && (root != root -> next());
+}
+
+template<class T> bool BraideSearchTree<T>::isHead(void)
+{
+	return (win == root);
+}
+
+template<class T> bool BraideSearchTree<T>::isEmpty()
+{
+	return (root == root -> next());
+}
+
+
+Поиск
+
+template<class T> T BraideSearchTree<T>::find(T val)
+{
+	BraideNode<T> *n = root -> rchild();
+	while (n) {
+		int result = (*cmp) (val, n ->val);
+		if (result < 0)
+			n = n ->lchild(); 
+		else if (result > 0)
+			n = n -> rchild();
+		else {
+			win = n;
+			return n -> val;
+		}
+	}
+	return NULL;
+}
+
+
+template<class T> T BraideSearchTree<T>::findMin(void)
+{
+	win = root->next();
+	return win -> val;
+}
+
+Включение элементов 
+
+template<class T> T BraideSearchTree<T>::insert(T val)
+{
+	int result = l;
+	BraideNode<T> *p = root;
+	BraideNode<T> *n = root -> rchild();
+	while (n) {
+		p = n;
+		result = (*cmp) (val, p -> val);
+		if (result < 0)
+			n = p->lchild(0);
+		else if (result > 0)
+			n = p ->rchild()t
+		else
+			return NULL;
+	}
+	
+	win = new BraideNode<T>(val);
+	if (result < 0) {
+		p ->_lchild = win;
+		p->prev() -> Node::insert(win);
+	}
+	else {
+		p -> _rchild = win;
+		p -> Node::insert(win);
+	}
+	return val;
+}
+
+
+Удаление элементов 
+
+
+
+template<class T> void BraideSearchTree<T>::remove(void)
+{
+	if (win != root)
+		_remove(win->val, root ->_rchild);
+}
+
+template<class T> 
+void BraideSearchTree<T>::_remove(T val, TreeNode<T>* &n)
+{
+
+	int result = (*cmp) (val, n->val);
+	if (result < 0)
+		_remove(val, n -> _lchild);
+	else if (result > 0);
+		_remove(val, n -> _rchild);
+	else {
+		if (n ->_lchild == NULL) {
+			BraideNode<T> *old = (BraideNode<T>*)n;
+			if (win == old)
+				win = old->prev();
+			n = old->rchild();
+			old ->Node::remove();
+			delete old;
+		}
+		else if (n -> _rchild == NULL) {
+			BraidedNode<T> *old = (BraidedNode<T>*)n;
+			if (win == old)
+				win = old->prev();
+			n = old->lchild();
+			old->Node::remove();
+			delete old;
+		}
+		else {
+			BraideNode<T> *m = ((BraidedNode<T>*)n)->next();
+			n - > val = m -> val;
+			_remove(m->val, s->_rchild);
+		}
+	}
+}
+
+
+template<class T> T BraidedSearchTree<T>::removeMin(void)
+{
+	T val = root -> next()->val;
+	if (root != root ->next())
+	_remove(val, root ->_rchild);
+	return val;
+}
+
+
+		
+
+
+Деревья со случайным поиском 
+
+
+template<class T>
+class RandomizeNode : public BraideNide<T> {
+
+	protected:
+		RandomizeNode *_parent;
+		double _priority; 
+		void rotateRight(void)
+		void rotateLeft(void);
+		voidbubbleUp(void);
+		void bubbleDown(void);
+	public:
+		RandomizeNode (T v, int seed = -1);
+		RandomizeNode *lchild(void);
+		RandomizeNode *rchild(void);
+		RandomizeNode *next(void);
+		RandomizeNode *prev(void);
+		RandomizeNode *parent(void);
+		double pririty(void);
+		friend class RandomizedSearchTree<T>;
+};
+
+
+
+
+template<class T>
+RandoizedNode<T>::RandomizedNode(T v, int seed): BraidedNode<T>(v)
+
+{
+	if (seed != -1) srand(seed);
+	_priority = (rand() % 32767 / 32767.0;
+	_parent = NULL;
+}
+
+template<class T> void RandomizedNode<T>::rotateRight(void)
+{
+	RandomizeNode<T> *y = this;
+	RandomizeNode<T> *x = y->lchild();
+	RandomizeNode<T> *p = y->parent()
+	y -> _lchild = x -> rchild();
+	if (y -> lchild() != NULL)
+		y ->lchild() -> _parent = y;
+	if (p -> rchild() == y)
+		p ->_rchild = x;
+	else
+		p ->_lchild = x;
+	x -> _parent = p;
+	x -> _rchild = y;
+	y -> _parent = x;
+}
+
+
+
+template<class T> void RandomizedNode<T>::rotateLeft(void)
+{
+	RandomizedNode<T> *x = this;
+	RandomizedNode<T> *y = x ->rchild();
+	RandomizedNode<T> *p = x->parent();
+	x -> _rchild = y -> lchild();
+	if (x ->rchild() != NULL)
+		x -> _rchild() -> parent = x;
+	if (p->lchild() == x)
+		p->_lchild = y;
+	else
+		p ->_rchild = y;
+	y ->_parent = p;
+	y ->_lchild = x;
+	x ->_parent = y;
+}
+
+
+template<class T> void RandomizedNode<T>::bubbleUp(void)
+{
+	RandomizedNode<T> *p = parent();
+	if (priority() < p -> pririty()) {
+		if (p ->lchild() == this)
+			p ->rotateRight();
+		else
+			p -> rotateLeft();
+		bubbleUp();
+	}
+}
+	
+template<class T> void RandomizedNode<T>::bubbleDown(void)
+{
+	float lcPriority = lchild() ? lchild() -> pririty():2.0;
+	float rcPriority = rchild() ? rchild() -> priority() : 2.0;
+	float minPriority = (lcPriority < rcPriority) ? lcPririty : rcPriority;
+	
+	if (prority()) <= minPriority)
+		return;
+	if (lcPriority < rcPriority)
+		rotateRight();
+	else
+		rotateLeft();
+	bubbleDown();
+	
+}
+
+template<class T>
+RandomizedNode<T> *RandomizedNode<T>::rchild(void)
+{
+	return (RandomizedNode<T>*) _rchild;
+}
+
+template<class T>
+RandomizedNode<T> *RandomizedNode<T>::lchild(void)
+{
+	return (RandomizedNode<T>*) _lchild;
+}
+
+
+
+template<class T>
+RandomizedNode<T> *RandomizedNode<T>::next(void)
+{
+	return (RandomizedNode<T>*) _next;
+}
+
+
+template<class T>
+RandomizedNode<T> *RandomizedNode<T>::prev(void)
+{
+	return (RandomizedNode<T>*) _prev;
+}
+
+
+template<class T>
+RandomizedNode<T> *RandomizedNode<T>::parent(void)
+{
+	return (RandomizedNode<T>*) _parent;
+}
+
+
+template<class T>
+double RandomizedNode<T>::priority(void)
+{
+	return _priority;
+}
+
+
+3.7.2 - page - 81
+
+template<class T> class RandomizedSearchTree {
+	private:
+		RandomizedNode<T> * root;
+		RandomizedNode<T> *win;
+		int (*cmp) (T,T);
+		void _remove(RandomizedNode<T>*);
+	public:
+		RandomizedSearchTree(int(*) (T, T), int = unt = -1);
+		~RandomizedSearchTree(void);
+		T next(void);
+		T prev(void);
+		void inorder(void(*)) (T) );
+		T val (void);
+		bool isFirst(void);
+		bool isLast(void);
+		bool isHead(void);
+		bool isEmpty(void);
+		T find(T);
+		T findMin(void);
+		T locate(T);
+		T insert(T);
+		void remove(void);
+		T remove(T);
+		T removeMin(void);
+};
+
+
+template<class T>
+RandomizedSearchTree<T>::RandomizedSearchTree(int(*c) (T,T), int seed): cmp(c)
+
+{
+	win = root = new RandomizedNode<T> (NULL, seed);
+	root -> _priority = -1.0;
+}
+
+
+
+template<class T>
+RandomizedSearchTree<T>::~RandomizedSearchTree(void)
+{
+	delete root;
+}
+
+template<class T> T RandomizedSearchTree<T>::next(void) 
+{
+	win = win->next();
+	return win ->val;
+}
+
+template<class T> T RandomizedSearchTree<T>::prev(void)
+{
+	win = win->prev();
+	return win->val;
+}
+
+template<class T> T RandomizedSearchTree<T>::val(void)
+{
+	return win->val;
+}
+
+template<class T>
+void RandomizedSearchTree<T>::inorder(void(*visit) (T))
+{
+	RandomizedNode<T> *n = root ->next();
+	while (n != root) {
+		(*visit) (n -> val);
+		n = n->next();
+	}
+}
+
+template<class T>
+bool RandomizedSearchTree<T>::isFirst(void)
+{
+	return (win == root -> next()) && (root != root -> next());
+}
+
+template<class T>
+bool RandomizedSearchTree<T>::isLast(void)
+{
+	return (win == root -> prev() ) && (root != root->next());
+}
+
+template<class T>
+bool RandomizedSearchTree<T>::isHead(void)
+{
+	return (win == root);
+}
+
+
+template<class T>
+bool RandomizedSearchTree<T>::isEmpty(void)
+{
+	return (root == root -> next());
+}
+
+
+template<class T> T RandomizedSearchTree<T>::find(T val)
+{
+	RandomizedNode<T> *n = root->rchild();
+	while (n) {
+		int result = (*cmp) (val, n -> val);
+		if (result < 0)
+			n = n -> lchild();
+		else if (result > 0)
+			n = n -> rchild();
+		else{
+			win = n;
+			return n ->val;
+		}
+	}
+	return NULL;
+}
+
+
+template<class T> T RandomizedSearchTree<T>::findMin(void)
+{
+ 	win = root ->next();
+	return win->val;
+}
+
+
+
+template<class T> T RandomizedSearchTree<T>::locate(T val)
+{
+	RandomizedNode<T> *b = root;
+	RandomizedNode<T> *n = root ->rchild();
+	while (n) {
+		int result = (*cmp) (val, n -> val);
+		if (result < 0)
+			n = n -> lchild();
+		else if (result > 0) {
+			b = n
+			n = n -> rchild();
+		}else {
+			win = n;
+			return win->val;
+		}
+	}
+	win = b;
+	return win->val;
+}
+
+
+
+
+Включение элементов
+
+template<class T> T RandomizedSearchTree<T>::insert(T val)
+{
+int result = 1;
+RandomizedNode<T> *p = root;
+RandomizedNode<T> *n = root ->rchild();
+while (n) {
+	p = n;
+	result = (*cmp) (val, p->val);
+	if (result < 0)
+		n = p ->lchild();
+	else if (result > 0)
+		n = p -> rchild();
+	else
+		return NULL;
+	}
+	win = new RandomizedNode<T>(val);
+	win ->_parent = p;
+	if (result < 0) {
+		p ->_lchild = win;
+		p ->prev()->Node::insert(win);
+	}
+	else {
+		p -> _rchild = win;
+		p ->Node::insert(win);
+	}
+	win -> bubbleUp();
+	return val;
+}
+
+
+Удаление элементов
+
+
+
+template<class T> void RandomizedSearchTree<T>::remove(void)
+{
+	if (win != root)
+		_remove(win);
+}
+
+
+
+template<class T> T RandomizedSearchTree<T>::removeMin(void)
+{
+	T val = root->next()->val;
+	if (root != root ->next())
+		_remove(root->next));
+	return val;
+}
+
+
+template<class T> void
+RandomizedSearchTree<T>::_remove(RandomizedNode<T> *n)
+{
+	n -> _pririty = 1. 5;
+	n -> bubbleDown();
+	RandomizedNode<T> *p = n ->parent();
+	if (p->lchild() == n)
+		p ->_lchild = NULL;
+	else
+		p -> _rchild = NULL;
+	if (win == n)
+		win = n -> prev();
+	n->Node::remove();
+	delete n;
+}
+
+
+template<class T> T RandomizedSearchTree<T>::remove(T val)
+{
+	T v = find(val);
+	if (v) {
+		remove();
+		return v;
+	}
+	return NULL;
+}
+
+
+
+s
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
 ~~~
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
